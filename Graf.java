@@ -106,6 +106,36 @@ public class Graf {
   // povezanost, komponente, mostovi i artikulacioni cvorovi
   // provera da li je graf stablo
   
+  //Dodat specijalan DFS za rad sa art. cvorovima
+  public void DFSArt(int v, TimeStamps dft, TimeStamps min, int[] artCv, int rod){
+	//rod predstavlja cvor sa kog je pozvan DFS, u slucaju prvog cvora, bice -1 (nema roditelja)
+	dft.stamp(v);
+	min.stamp(v);
+    SkupSuseda S = susedi(v);
+    int potomci = 0; //prati se da bi se moglo odrediti da li je pocetni cvor artikulacioni
+	while(imaJos(S)){
+		int w = sledeci(S);
+		if(!dft.stamped(w)){
+			potomci++;
+			DFSArt(w, dft,min,artCv,v);
+			int m = Math.min(min.theStampOf(v),min.theStampOf(w));
+			min.stamp(v,m);
+			//System.out.println("Cvorovi " + v + ", " + w + " vrednosti stampova " + min.theStampOf(v) + ", " + min.theStampOf(w) + " || "+ dft.theStampOf(v) + ", " + dft.theStampOf(w));
+			if(rod != -1 && min.theStampOf(w) >= dft.theStampOf(v)){ //ako v nije koren i ako je min dubina veca / jednaka dubini pronalaska v => v je art., uporedjuje se min suseda sa vremenom pronalaska tren. cvora
+				//System.out.println("Cvor " + v + "je art, nakon njega je cvor " + w ); 
+				artCv[v] = 1; //uradjeno ovako zato sto ima mogucnosti da se vise puta isti cvor obelezi da je artikulacioni, te da se izbegne visestruk ispis
+			}
+		}else if(w != rod){ //u slucaju da je cvor vec posecen, minimalna dubina se menja zbog povratne putanje (potencijalno nepotrebno, PROVERITI PRE SLANJA)
+			int m = Math.min(min.theStampOf(v),dft.theStampOf(w));
+			min.stamp(v,m);
+		}
+	}
+	if(rod == -1 && potomci >1){
+		artCv[v] = 1;
+	}
+
+  }
+  
   public void DFS(int v, TimeStamps dft) {
     dft.stamp(v);
     SkupSuseda S = susedi(v);
